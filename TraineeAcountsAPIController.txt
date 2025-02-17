@@ -1,0 +1,181 @@
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
+using Sabio.Models.Domain;
+using Sabio.Services.Interfaces;
+using Sabio.Services;
+using Sabio.Web.Controllers;
+using Sabio.Web.Models.Responses;
+using System.Collections.Generic;
+using System;
+using Sabio.Models;
+using Sabio.Models.Requests;
+using Sabio.Models.Requests.TraineeAccounts;
+using SendGrid;
+
+namespace Sabio.Web.Api.Controllers
+{
+    [Route("api/traineeaccounts")]
+    [ApiController]
+    public class TraineeAccountsApiController : BaseApiController
+    {
+        private ITraineeAccountsService _traineeAccountsService = null;
+        private IAuthenticationService<int> _authenticationService = null;
+
+        public TraineeAccountsApiController(ITraineeAccountsService service
+            , ILogger<TraineeAccountsApiController> logger
+            , IAuthenticationService<int> authenticationService) : base(logger)
+        {
+            _traineeAccountsService = service;
+            _authenticationService = authenticationService;
+        }
+
+        [HttpGet("{id:int}")]
+        public ActionResult<ItemResponse<TraineeAccounts>> GetById(int id)
+        {
+            int iCode = 200;
+            BaseResponse response = null;
+            TraineeAccounts traineeAccounts = null;
+
+            try
+            {
+                traineeAccounts = _traineeAccountsService.GetById(id);
+
+                if (traineeAccounts == null)
+                {
+                    iCode = 404;
+                    response = new ErrorResponse("Application Resource not found.");
+                }
+                else
+                {
+                    response = new ItemResponse<TraineeAccounts> { Item = traineeAccounts };
+                }
+            }
+            catch (Exception ex)
+            {
+                iCode = 500;
+                base.Logger.LogError(ex.ToString());
+                response = new ErrorResponse($"Generic Error: {ex.Message}");
+            }
+            return StatusCode(iCode, response);
+        }
+
+        [HttpGet("traineeid")]
+        public ActionResult<ItemResponse<Paged<TraineeAccounts>>> GetByTraineeId(int pageIndex, int pageSize, int traineeId)
+        {
+            int iCode = 200;
+            BaseResponse response = null;
+
+            try
+            {
+                Paged<TraineeAccounts> paged = _traineeAccountsService.GetByTraineeId(pageIndex, pageSize, traineeId);
+
+                if (paged == null)
+                {
+                    iCode = 404;
+                    response = new ErrorResponse("Application Resource not found.");
+                }
+                else
+                {
+                    response = new ItemResponse<Paged<TraineeAccounts>> { Item = paged };
+                }
+            }
+            catch (Exception ex)
+            {
+                iCode = 500;
+                base.Logger.LogError(ex.ToString());
+                response = new ErrorResponse($"Generic Error: {ex.Message}");
+            }
+            return StatusCode(iCode, response);
+        }
+
+        [HttpGet("zoneid")]
+        public ActionResult<ItemResponse<Paged<TraineeAccounts>>> GetByZoneId(int pageIndex, int pageSize, int zoneId)
+        {
+            int iCode = 200;
+            BaseResponse response = null;
+
+            try
+            {
+                Paged<TraineeAccounts> paged = _traineeAccountsService.GetByZoneId(pageIndex, pageSize, zoneId);
+
+                if (paged == null)
+                {
+                    iCode = 404;
+                    response = new ErrorResponse("Application Resource not found.");
+                }
+                else
+                {
+                    response = new ItemResponse<Paged<TraineeAccounts>> { Item = paged };
+                }
+            }
+            catch (Exception ex)
+            {
+                iCode = 500;
+                base.Logger.LogError(ex.ToString());
+                response = new ErrorResponse($"Generic Error: {ex.Message}");
+            }
+            return StatusCode(iCode, response);
+        }
+
+        [HttpPost]
+        public ActionResult<ItemResponse<int>> Create(TraineeAccountsAddRequest model)
+        {
+            int iCode = 200;
+            BaseResponse response = null;
+
+            try
+            {
+                int userId = _authenticationService.GetCurrentUserId();
+                int id = _traineeAccountsService.Create(model, userId);
+                response = new ItemResponse<int>() { Item = id };
+            }
+            catch (Exception ex)
+            {
+                iCode = 500;
+                base.Logger.LogError(ex.ToString());
+                response = new ErrorResponse($"Generic Error: {ex.Message}");
+            }
+            return StatusCode(iCode, response);
+        }
+
+        [HttpPut("username")]
+        public ActionResult<SuccessResponse> UpdateUsername(TraineeAccountsUsernameUpdateRequest model)
+        {
+            int iCode = 200;
+            BaseResponse response = null;
+
+            try
+            {
+                int userId = _authenticationService.GetCurrentUserId();
+                _traineeAccountsService.UpdateUsername(model, userId);
+                response = new SuccessResponse();
+            }
+            catch (Exception ex)
+            {
+                iCode = 500;
+                response = new ErrorResponse(ex.Message);
+            }
+            return StatusCode(iCode, response);
+        }
+
+        [HttpPut("status")]
+        public ActionResult<SuccessResponse> UpdateStatus(TraineeAccountsStatusUpdateRequest model)
+        {
+            int iCode = 200;
+            BaseResponse response = null;
+
+            try
+            {
+                int userId = _authenticationService.GetCurrentUserId();
+                _traineeAccountsService.UpdateStatus(model, userId);
+                response = new SuccessResponse();
+            }
+            catch (Exception ex)
+            {
+                iCode = 500;
+                response = new ErrorResponse(ex.Message);
+            }
+            return StatusCode(iCode, response);
+        }
+    }
+}

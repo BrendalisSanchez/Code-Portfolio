@@ -1,0 +1,78 @@
+import React from "react";
+import PropTypes from "prop-types";
+import "../../contact.css";
+import { Trash, Layers, MoreVertical } from "react-feather";
+import { Dropdown } from "react-bootstrap";
+import { Link } from "react-router-dom";
+ 
+function TraineeAccountsTable(props) {
+  const aTraineeAccount = props.traineeAccount;
+ 
+  const CustomToggle = React.forwardRef(({ children, onClick }, ref) => (
+    <Link
+      to=""
+      ref={ref}
+      onClick={(e) => {
+        e.preventDefault();
+        onClick(e);
+      }}
+    >
+      {children}
+    </Link>
+  ));
+ 
+  const ActionMenu = () => {
+    return (
+      <Dropdown>
+        <Dropdown.Toggle as={CustomToggle}>
+          <MoreVertical size="15px" className="text-secondary" />
+        </Dropdown.Toggle>
+        <Dropdown.Menu align="end">
+          <Dropdown.Header>...</Dropdown.Header>
+          <Dropdown.Item eventKey="1">
+            {" "}
+            <Layers size="18px" className="dropdown-item-icon" /> Change Trainee
+          </Dropdown.Item>
+          <Dropdown.Item eventKey="2">
+            {" "}
+            <Trash size="18px" className="dropdown-item-icon" /> Delete Trainee
+          </Dropdown.Item>
+        </Dropdown.Menu>
+      </Dropdown>
+    );
+  };
+ 
+  return (
+    <tr>
+      <td>
+        <img
+          src={aTraineeAccount.avatarUrl}
+          alt="example"
+          className="contact-img"
+        ></img>
+      </td>
+      <td>{aTraineeAccount.username}</td>
+      <td>{aTraineeAccount.zone.name}</td>
+      <td>{aTraineeAccount.accountStatus.name}</td>
+      <td>
+        <ActionMenu />
+      </td>
+    </tr>
+  );
+}
+ 
+TraineeAccountsTable.propTypes = {
+  traineeAccount: PropTypes.shape({
+    username: PropTypes.string.isRequired,
+ 
+    avatarUrl: PropTypes.string.isRequired,
+    zone: PropTypes.shape({
+      name: PropTypes.string.isRequired,
+    }).isRequired,
+    accountStatus: PropTypes.string.isRequired,
+  }),
+  children: PropTypes.string.isRequired,
+  onClick: PropTypes.string.isRequired,
+};
+ 
+export default TraineeAccountsTable;
